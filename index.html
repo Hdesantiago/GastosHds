@@ -33,11 +33,21 @@
           </label>
           <label class="field">
             <span>Ingreso recibido</span>
-            <input id="income-display" type="text" readonly />
+            <div class="income-row">
+              <input id="income-display" type="text" readonly />
+              <button id="btn-edit-income" class="btn-secondary">Editar</button>
+            </div>
           </label>
         </div>
       </section>
 
+      <!-- Tabs -->
+      <div class="tabs" role="tablist">
+        <button class="tab-button active" data-tab="resumen">Resumen</button>
+        <button class="tab-button" data-tab="deudas">Deudas</button>
+      </div>
+
+      <div id="tab-resumen">
       <section class="summary-grid" id="summary-grid">
         <article>
           <span>Total presupuesto</span>
@@ -81,6 +91,32 @@
           </table>
         </div>
       </section>
+      </div>
+
+      <!-- Deudas tab -->
+      <div id="tab-deudas" class="hidden">
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <h2>Deudas</h2>
+              <p>Registra tus deudas generales (no están ligadas a quincenas).</p>
+            </div>
+            <button id="btn-add-debt">Agregar deuda</button>
+          </div>
+          <div class="table-wrapper">
+            <table id="debts-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Monto</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
 
     <div class="modal-overlay hidden" id="modal-overlay"></div>
@@ -144,6 +180,24 @@
         <label class="field">
           <span>Presupuesto inicial</span>
           <input type="number" id="concept-budget" min="0" value="0" required />
+        </label>
+        <div class="actions">
+          <button type="button" class="btn-secondary" data-close="true">Cancelar</button>
+          <button type="submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal hidden" id="modal-debt">
+      <h3 id="debt-modal-title">Agregar deuda</h3>
+      <form id="form-debt">
+        <label class="field">
+          <span>Nombre</span>
+          <input type="text" id="debt-name" required />
+        </label>
+        <label class="field">
+          <span>Monto</span>
+          <input type="number" id="debt-amount" min="0" step="0.01" value="0" required />
         </label>
         <div class="actions">
           <button type="button" class="btn-secondary" data-close="true">Cancelar</button>

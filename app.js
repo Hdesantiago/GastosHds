@@ -3,6 +3,8 @@ const DB_VERSION = 1;
 let db;
 let selectedQuincenaId = null;
 let selectedConceptId = null;
+let selectedDebtId = null;
+let editingQuincenaId = null;
 let installPromptEvent = null;
 
 const elements = {
@@ -25,6 +27,7 @@ const elements = {
   quincenaMonth: document.getElementById('quincena-month'),
   quincenaPeriod: document.getElementById('quincena-period'),
   quincenaIncome: document.getElementById('quincena-income'),
+  btnEditIncome: document.getElementById('btn-edit-income'),
   modalConcept: document.getElementById('modal-concept'),
   formConcept: document.getElementById('form-concept'),
   conceptName: document.getElementById('concept-name'),
@@ -44,6 +47,16 @@ const elements = {
   movementList: document.getElementById('movement-list')
 };
 
+elements.tabButtons = document.querySelectorAll('.tab-button');
+elements.tabResumen = document.getElementById('tab-resumen');
+elements.tabDeudas = document.getElementById('tab-deudas');
+elements.btnAddDebt = document.getElementById('btn-add-debt');
+elements.debtsTableBody = document.querySelector('#debts-table tbody');
+elements.modalDebt = document.getElementById('modal-debt');
+elements.formDebt = document.getElementById('form-debt');
+elements.debtName = document.getElementById('debt-name');
+elements.debtAmount = document.getElementById('debt-amount');
+
 function openDb() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -61,6 +74,10 @@ function openDb() {
       if (!database.objectStoreNames.contains('movimientos')) {
         const store = database.createObjectStore('movimientos', { keyPath: 'id', autoIncrement: true });
         store.createIndex('conceptoId', 'conceptoId', { unique: false });
+      }
+      if (!database.objectStoreNames.contains('deudas')) {
+        const store = database.createObjectStore('deudas', { keyPath: 'id', autoIncrement: true });
+        store.createIndex('name', 'name', { unique: false });
       }
     };
 
@@ -243,7 +260,7 @@ async function renderConcepts() {
 }
 
 function bindEvents() {
-  elements.btnAddQuincena.addEventListener('click', () => openModal(elements.modalQuincena));
+  elements.btnAddQuincena.addEventListener('click', () => openQuincenaForm());
   elements.btnAddConcept.addEventListener('click', () => openConceptForm());
   elements.btnEditConcept.addEventListener('click', async () => {
     const conceptId = selectedConceptId;
@@ -293,6 +310,32 @@ function bindEvents() {
     event.preventDefault();
     await saveTransaction();
   });
+
+  // Tabs
+  elements.tabButtons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const tab = e.currentTarget.dataset.tab;
+      showTab(tab);
+    });
+  });
+
+  // Quincena edit button
+  if (elements.btnEditIncome) {
+    elements.btnEditIncome.addEventListener('click', async () => {
+      if (!selectedQuincenaId) return;
+      await openQuincenaForm(Number(selectedQuincenaId));
+    });
+  }
+  // Deudas
+  if (elements.btnAddDebt) {
+    elements.btnAddDebt.addEventListener('click', () => openDebtForm());
+  }
+  if (elements.formDebt) {
+    elements.formDebt.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await saveDebt();
+    });
+  }
 }
 
 function openModal(modal) {
@@ -304,6 +347,7 @@ function closeModals() {
   document.querySelectorAll('.modal').forEach((modal) => modal.classList.add('hidden'));
   elements.modalOverlay.classList.add('hidden');
   selectedConceptId = null;
+  editingQuincenaId = null;
 }
 
 async function saveQuincena() {
@@ -314,9 +358,43 @@ async function saveQuincena() {
 
   if (!year || !month || !period) return;
 
-  await add('quincenas', { year, month, period, income, createdAt: new Date().toISOString() });
+  if (editingQuincenaId) {
+    const existing = await getById('quincenas', Number(editingQuincenaId));
+    if (!existing) return;
+    await put('quincenas', {
+      ...existing,
+      year,
+      month,
+      period,
+      income,
+      updatedAt: new Date().toISOString()
+    });
+  } else {
+    await add('quincenas', { year, month, period, income, createdAt: new Date().toISOString() });
+  }
   closeModals();
   await renderQuincenas();
+}
+
+async function openQuincenaForm(quincenaId = null) {
+  if (quincenaId) {
+    const q = await getById('quincenas', Number(quincenaId));
+    if (!q) return;
+    elements.quincenaYear.value = q.year;
+    elements.quincenaMonth.value = q.month;
+    elements.quincenaPeriod.value = q.period;
+    elements.quincenaIncome.value = q.income ?? 0;
+    editingQuincenaId = Number(quincenaId);
+  } else {
+    const current = getCurrentQuincena();
+    elements.quincenaYear.value = current.year;
+    elements.quincenaMonth.value = current.month;
+    elements.quincenaPeriod.value = current.period;
+    elements.quincenaIncome.value = 0;
+    editingQuincenaId = null;
+  }
+
+  openModal(elements.modalQuincena);
 }
 
 async function openConceptForm(conceptId = null) {
@@ -459,6 +537,105 @@ async function saveTransaction() {
 
   await renderConcepts();
   await openConceptDetail(selectedConceptId);
+}
+
+// --- Tabs and Deudas functions ---
+function showTab(tab) {
+  elements.tabButtons.forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  if (tab === 'deudas') {
+    elements.tabResumen.classList.add('hidden');
+    elements.tabDeudas.classList.remove('hidden');
+    renderDebts();
+  } else {
+    elements.tabDeudas.classList.add('hidden');
+    elements.tabResumen.classList.remove('hidden');
+    renderConcepts();
+  }
+}
+
+async function renderDebts() {
+  const debts = await getAll('deudas');
+  elements.debtsTableBody.innerHTML = '';
+
+  debts.forEach((debt) => {
+    const row = document.createElement('tr');
+    row.dataset.debtId = debt.id;
+    row.innerHTML = `
+      <td>${debt.name}</td>
+      <td>${formatCurrency(Number(debt.amount) || 0)}</td>
+      <td>
+        <button class="btn-secondary btn-edit-debt" data-id="${debt.id}">Editar</button>
+        <button class="btn-danger btn-delete-debt" data-id="${debt.id}">Eliminar</button>
+      </td>
+    `;
+
+    elements.debtsTableBody.appendChild(row);
+  });
+
+  // attach handlers
+  elements.debtsTableBody.querySelectorAll('.btn-edit-debt').forEach((b) => {
+    b.addEventListener('click', (e) => openDebtForm(Number(e.currentTarget.dataset.id)));
+  });
+  elements.debtsTableBody.querySelectorAll('.btn-delete-debt').forEach((b) => {
+    b.addEventListener('click', (e) => deleteDebt(Number(e.currentTarget.dataset.id)));
+  });
+}
+
+async function openDebtForm(debtId = null) {
+  if (debtId) {
+    const debt = await getById('deudas', Number(debtId));
+    if (!debt) return;
+    elements.debtName.value = debt.name;
+    elements.debtAmount.value = debt.amount ?? '0';
+    selectedDebtId = Number(debtId);
+    document.getElementById('debt-modal-title').textContent = 'Editar deuda';
+  } else {
+    elements.debtName.value = '';
+    elements.debtAmount.value = '0';
+    selectedDebtId = null;
+    document.getElementById('debt-modal-title').textContent = 'Agregar deuda';
+  }
+
+  openModal(elements.modalDebt);
+}
+
+async function saveDebt() {
+  const name = elements.debtName.value.trim();
+  const amount = Number(elements.debtAmount.value);
+
+  if (!name || isNaN(amount)) return;
+
+  if (selectedDebtId) {
+    const existing = await getById('deudas', selectedDebtId);
+    if (!existing) return;
+    await put('deudas', {
+      ...existing,
+      name,
+      amount,
+      updatedAt: new Date().toISOString()
+    });
+  } else {
+    await add('deudas', { name, amount, createdAt: new Date().toISOString() });
+  }
+
+  closeModals();
+  await renderDebts();
+}
+
+async function deleteDebt(id) {
+  const confirmed = window.confirm('¿Deseas eliminar esta deuda?');
+  if (!confirmed) return;
+
+  const txReq = db.transaction(['deudas'], 'readwrite');
+  const store = txReq.objectStore('deudas');
+  store.delete(id);
+
+  await new Promise((resolve, reject) => {
+    txReq.oncomplete = () => resolve();
+    txReq.onerror = () => reject(txReq.error);
+  });
+
+  await renderDebts();
 }
 
 window.addEventListener('DOMContentLoaded', init);
