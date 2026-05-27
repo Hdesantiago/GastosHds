@@ -16,6 +16,8 @@ const elements = {
   btnAddQuincena: document.getElementById('btn-add-quincena'),
   btnInstall: document.getElementById('btn-install'),
   btnAddConcept: document.getElementById('btn-add-concept'),
+  btnEditConcept: document.getElementById('btn-edit-concept'),
+  btnDeleteConcept: document.getElementById('btn-delete-concept'),
   modalOverlay: document.getElementById('modal-overlay'),
   modalQuincena: document.getElementById('modal-quincena'),
   formQuincena: document.getElementById('form-quincena'),
@@ -211,8 +213,8 @@ async function renderConcepts() {
   conceptos.forEach((concepto) => {
     const conceptMovements = movements.filter((mov) => mov.conceptoId === concepto.id);
     const spent = conceptMovements.reduce((sum, mov) => sum + Number(mov.amount), 0);
-    const remaining = Math.max(0, concepto.budget - spent);
-    const saved = concepto.type === 'ahorro' ? remaining : concepto.saved || 0;
+    const remaining = Math.max(0, Number(concepto.budget) - spent);
+    const saved = concepto.type === 'ahorro' ? remaining : 0;
 
     totalBudget += Number(concepto.budget);
     totalSpent += spent;
@@ -243,6 +245,17 @@ async function renderConcepts() {
 function bindEvents() {
   elements.btnAddQuincena.addEventListener('click', () => openModal(elements.modalQuincena));
   elements.btnAddConcept.addEventListener('click', () => openConceptForm());
+  elements.btnEditConcept.addEventListener('click', async () => {
+    const conceptId = selectedConceptId;
+    if (!conceptId) return;
+
+    elements.modalDetail.classList.add('hidden');
+    elements.modalOverlay.classList.add('hidden');
+    await openConceptForm(conceptId);
+  });
+  elements.btnDeleteConcept.addEventListener('click', async () => {
+    await deleteConcept();
+  });
   elements.quincenaSelect.addEventListener('change', async (event) => {
     selectedQuincenaId = event.target.value;
     await renderCurrentQuincena();
@@ -306,11 +319,24 @@ async function saveQuincena() {
   await renderQuincenas();
 }
 
-function openConceptForm() {
-  elements.conceptModalTitle.textContent = 'Agregar concepto';
-  elements.conceptName.value = '';
-  elements.conceptType.value = 'gasto';
-  elements.conceptBudget.value = '0';
+async function openConceptForm(conceptId = null) {
+  if (conceptId) {
+    const concepto = await getById('conceptos', Number(conceptId));
+    if (!concepto) return;
+
+    elements.conceptModalTitle.textContent = 'Editar concepto';
+    elements.conceptName.value = concepto.name;
+    elements.conceptType.value = concepto.type || 'gasto';
+    elements.conceptBudget.value = concepto.budget ?? '0';
+    selectedConceptId = Number(conceptId);
+  } else {
+    elements.conceptModalTitle.textContent = 'Agregar concepto';
+    elements.conceptName.value = '';
+    elements.conceptType.value = 'gasto';
+    elements.conceptBudget.value = '0';
+    selectedConceptId = null;
+  }
+
   openModal(elements.modalConcept);
 }
 
@@ -318,20 +344,38 @@ async function saveConcept() {
   const name = elements.conceptName.value.trim();
   const type = elements.conceptType.value;
   const budget = Number(elements.conceptBudget.value);
+  const editingConceptId = selectedConceptId;
 
   if (!name || isNaN(budget)) return;
 
-  await add('conceptos', {
-    quincenaId: Number(selectedQuincenaId),
-    name,
-    type,
-    budget,
-    saved: 0,
-    createdAt: new Date().toISOString()
-  });
+  if (editingConceptId) {
+    const existing = await getById('conceptos', editingConceptId);
+    if (!existing) return;
 
+    await put('conceptos', {
+      ...existing,
+      name,
+      type,
+      budget,
+      updatedAt: new Date().toISOString()
+    });
+  } else {
+    await add('conceptos', {
+      quincenaId: Number(selectedQuincenaId),
+      name,
+      type,
+      budget,
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  const conceptToOpen = editingConceptId;
   closeModals();
   await renderConcepts();
+
+  if (conceptToOpen) {
+    await openConceptDetail(conceptToOpen);
+  }
 }
 
 async function openConceptDetail(conceptId) {
@@ -341,8 +385,8 @@ async function openConceptDetail(conceptId) {
 
   const movements = await getAll('movimientos', 'conceptoId', selectedConceptId);
   const spent = movements.reduce((sum, mov) => sum + Number(mov.amount), 0);
-  const remaining = Math.max(0, concepto.budget - spent);
-  const saved = concepto.type === 'ahorro' ? remaining : concepto.saved || 0;
+  const remaining = Math.max(0, Number(concepto.budget) - spent);
+  const saved = concepto.type === 'ahorro' ? remaining : 0;
 
   elements.detailTitle.textContent = concepto.name;
   elements.detailSubtitle.textContent = `Tipo: ${concepto.type === 'ahorro' ? 'Ahorro' : 'Gasto'}`;
@@ -370,6 +414,33 @@ async function openConceptDetail(conceptId) {
   }
 
   openModal(elements.modalDetail);
+}
+
+async function deleteConcept() {
+  if (!selectedConceptId) return;
+
+  const confirmed = window.confirm('¿Deseas eliminar este concepto y todos sus movimientos?');
+  if (!confirmed) return;
+
+  const concepto = await getById('conceptos', selectedConceptId);
+  if (!concepto) return;
+
+  const movements = await getAll('movimientos', 'conceptoId', selectedConceptId);
+  const transaction = db.transaction(['conceptos', 'movimientos'], 'readwrite');
+  const conceptosStore = transaction.objectStore('conceptos');
+  const movimientosStore = transaction.objectStore('movimientos');
+
+  conceptosStore.delete(selectedConceptId);
+  movements.forEach((movement) => movimientosStore.delete(movement.id));
+
+  await new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+
+  selectedConceptId = null;
+  closeModals();
+  await renderConcepts();
 }
 
 async function saveTransaction() {

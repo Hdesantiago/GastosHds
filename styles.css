@@ -60,6 +60,14 @@ button:hover {
   background: #4338ca;
 }
 
+.btn-danger {
+  background: #dc2626;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
 .btn-secondary {
   background: #e5e7eb;
   color: #111827;
@@ -241,6 +249,13 @@ tbody td:last-child {
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   margin-bottom: 20px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .transaction-form {
