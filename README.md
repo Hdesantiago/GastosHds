@@ -17,3 +17,10 @@ Esta es una aplicación web ligera para registrar gastos y ahorro quincenalmente
 2. Crea una quincena nueva o usa la quincena automática inicial.
 3. Agrega conceptos y registra los movimientos de consumo.
 4. Revisa el detalle y el saldo restante de cada concepto.
+
+## Convertirlo en App instalable
+
+- La app ya incluye `manifest.json` y `service-worker.js` para funcionar como PWA.
+- Para instalarla en el celular, abre la página desde un servidor web (no por `file://`).
+- En VS Code puedes usar la extensión Live Server o ejecutar un servidor local.
+- En el navegador móvil deberías ver la opción "Agregar a pantalla de inicio" o "Instalar".

@@ -142,6 +142,12 @@ input[readonly] {
   margin-bottom: 14px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .table-wrapper {
   overflow-x: auto;
 }

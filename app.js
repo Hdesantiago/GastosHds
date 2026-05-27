@@ -3,6 +3,7 @@ const DB_VERSION = 1;
 let db;
 let selectedQuincenaId = null;
 let selectedConceptId = null;
+let installPromptEvent = null;
 
 const elements = {
   quincenaSelect: document.getElementById('quincena-select'),
@@ -13,6 +14,7 @@ const elements = {
   totalSaved: document.getElementById('total-saved'),
   conceptsTableBody: document.querySelector('#concepts-table tbody'),
   btnAddQuincena: document.getElementById('btn-add-quincena'),
+  btnInstall: document.getElementById('btn-install'),
   btnAddConcept: document.getElementById('btn-add-concept'),
   modalOverlay: document.getElementById('modal-overlay'),
   modalQuincena: document.getElementById('modal-quincena'),
@@ -127,7 +129,22 @@ async function init() {
   await openDb();
   await ensureDefaultQuincena();
   bindEvents();
+  registerServiceWorker();
   await renderQuincenas();
+}
+
+function hideInstallButton() {
+  if (elements.btnInstall) {
+    elements.btnInstall.classList.add('hidden');
+  }
+}
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch((error) => {
+      console.error('Service Worker registration failed:', error);
+    });
+  }
 }
 
 async function ensureDefaultQuincena() {
@@ -230,6 +247,18 @@ function bindEvents() {
     selectedQuincenaId = event.target.value;
     await renderCurrentQuincena();
   });
+
+  if (elements.btnInstall) {
+    elements.btnInstall.addEventListener('click', async () => {
+      if (!installPromptEvent) return;
+      installPromptEvent.prompt();
+      const result = await installPromptEvent.userChoice;
+      if (result.outcome === 'accepted') {
+        hideInstallButton();
+      }
+      installPromptEvent = null;
+    });
+  }
 
   document.querySelectorAll('[data-close="true"]').forEach((button) => {
     button.addEventListener('click', closeModals);
@@ -362,3 +391,11 @@ async function saveTransaction() {
 }
 
 window.addEventListener('DOMContentLoaded', init);
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  installPromptEvent = event;
+  if (elements.btnInstall) {
+    elements.btnInstall.classList.remove('hidden');
+  }
+});
