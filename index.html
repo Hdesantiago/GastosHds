@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gastos Quincenales</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header>
+        <div>
+          <p class="eyebrow">Registro de gastos y ahorro</p>
+          <h1>Gastos Quincenales</h1>
+        </div>
+        <button id="btn-add-quincena">Nueva quincena</button>
+      </header>
+
+      <section class="panel" id="quincena-panel">
+        <div class="row gap-sm wrap">
+          <label class="field">
+            <span>Quincena</span>
+            <select id="quincena-select"></select>
+          </label>
+          <label class="field">
+            <span>Ingreso recibido</span>
+            <input id="income-display" type="text" readonly />
+          </label>
+        </div>
+      </section>
+
+      <section class="summary-grid" id="summary-grid">
+        <article>
+          <span>Total presupuesto</span>
+          <strong id="total-budget">$0</strong>
+        </article>
+        <article>
+          <span>Total gastado</span>
+          <strong id="total-spent">$0</strong>
+        </article>
+        <article>
+          <span>Total restante</span>
+          <strong id="total-remaining">$0</strong>
+        </article>
+        <article>
+          <span>Total ahorrado</span>
+          <strong id="total-saved">$0</strong>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <h2>Conceptos</h2>
+            <p>Haz clic en un renglón para ver el detalle.</p>
+          </div>
+          <button id="btn-add-concept">Agregar concepto</button>
+        </div>
+        <div class="table-wrapper">
+          <table id="concepts-table">
+            <thead>
+              <tr>
+                <th>Concepto</th>
+                <th>Tipo</th>
+                <th>Presupuesto</th>
+                <th>Gastado</th>
+                <th>Queda</th>
+                <th>Ahorrado</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-overlay hidden" id="modal-overlay"></div>
+
+    <div class="modal hidden" id="modal-quincena">
+      <h3>Nueva quincena</h3>
+      <form id="form-quincena">
+        <label class="field">
+          <span>Año</span>
+          <input type="number" id="quincena-year" min="2020" required />
+        </label>
+        <label class="field">
+          <span>Mes</span>
+          <select id="quincena-month" required>
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Quincena</span>
+          <select id="quincena-period" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Ingreso recibido</span>
+          <input type="number" id="quincena-income" min="0" value="0" required />
+        </label>
+        <div class="actions">
+          <button type="button" class="btn-secondary" data-close="true">Cancelar</button>
+          <button type="submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal hidden" id="modal-concept">
+      <h3 id="concept-modal-title">Agregar concepto</h3>
+      <form id="form-concept">
+        <label class="field">
+          <span>Nombre</span>
+          <input type="text" id="concept-name" required />
+        </label>
+        <label class="field">
+          <span>Tipo</span>
+          <select id="concept-type" required>
+            <option value="gasto">Gasto</option>
+            <option value="ahorro">Ahorro</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Presupuesto inicial</span>
+          <input type="number" id="concept-budget" min="0" value="0" required />
+        </label>
+        <div class="actions">
+          <button type="button" class="btn-secondary" data-close="true">Cancelar</button>
+          <button type="submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal hidden" id="modal-detail">
+      <button class="close-button" data-close="true">×</button>
+      <div class="detail-header">
+        <div>
+          <h3 id="detail-title">Detalle del concepto</h3>
+          <p id="detail-subtitle"></p>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div>
+          <span>Presupuesto</span>
+          <strong id="detail-budget">$0</strong>
+        </div>
+        <div>
+          <span>Gastado</span>
+          <strong id="detail-spent">$0</strong>
+        </div>
+        <div>
+          <span>Queda</span>
+          <strong id="detail-remaining">$0</strong>
+        </div>
+        <div>
+          <span>Ahorrado</span>
+          <strong id="detail-saved">$0</strong>
+        </div>
+      </div>
+      <form id="form-transaction" class="transaction-form">
+        <label class="field">
+          <span>Detalle</span>
+          <input type="text" id="transaction-note" placeholder="Ej. compra de mercado" required />
+        </label>
+        <label class="field">
+          <span>Monto</span>
+          <input type="number" id="transaction-amount" min="0.01" step="0.01" value="0" required />
+        </label>
+        <div class="actions">
+          <button type="button" class="btn-secondary" data-close="true">Cerrar</button>
+          <button type="submit">Agregar consumo</button>
+        </div>
+      </form>
+      <div class="movement-list">
+        <h4>Movimientos</h4>
+        <ul id="movement-list"></ul>
+      </div>
+    </div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
