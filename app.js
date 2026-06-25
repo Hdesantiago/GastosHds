@@ -56,6 +56,7 @@ elements.modalDebt = document.getElementById('modal-debt');
 elements.formDebt = document.getElementById('form-debt');
 elements.debtName = document.getElementById('debt-name');
 elements.debtAmount = document.getElementById('debt-amount');
+elements.totalDebts = document.getElementById('total-debts');
 
 function openDb() {
   return new Promise((resolve, reject) => {
@@ -556,13 +557,18 @@ function showTab(tab) {
 async function renderDebts() {
   const debts = await getAll('deudas');
   elements.debtsTableBody.innerHTML = '';
+  
+  let totalDebts = 0;
 
   debts.forEach((debt) => {
+    const debtAmount = Number(debt.amount) || 0;
+    totalDebts += debtAmount;
+    
     const row = document.createElement('tr');
     row.dataset.debtId = debt.id;
     row.innerHTML = `
       <td>${debt.name}</td>
-      <td>${formatCurrency(Number(debt.amount) || 0)}</td>
+      <td>${formatCurrency(debtAmount)}</td>
       <td>
         <button class="btn-secondary btn-edit-debt" data-id="${debt.id}">Editar</button>
         <button class="btn-danger btn-delete-debt" data-id="${debt.id}">Eliminar</button>
@@ -571,6 +577,9 @@ async function renderDebts() {
 
     elements.debtsTableBody.appendChild(row);
   });
+
+  // Update total debts display
+  elements.totalDebts.textContent = formatCurrency(totalDebts);
 
   // attach handlers
   elements.debtsTableBody.querySelectorAll('.btn-edit-debt').forEach((b) => {
