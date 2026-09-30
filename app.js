@@ -56,6 +56,7 @@ elements.modalDebt = document.getElementById('modal-debt');
 elements.formDebt = document.getElementById('form-debt');
 elements.debtName = document.getElementById('debt-name');
 elements.debtAmount = document.getElementById('debt-amount');
+elements.debtPayment = document.getElementById('debt-payment');
 elements.totalDebts = document.getElementById('total-debts');
 
 function openDb() {
@@ -562,6 +563,7 @@ async function renderDebts() {
 
   debts.forEach((debt) => {
     const debtAmount = Number(debt.amount) || 0;
+    const debtPayment = Number(debt.payment) || 0;
     totalDebts += debtAmount;
     
     const row = document.createElement('tr');
@@ -569,6 +571,9 @@ async function renderDebts() {
     row.innerHTML = `
       <td>${debt.name}</td>
       <td>${formatCurrency(debtAmount)}</td>
+      <td>
+        <input type="number" class="payment-input" data-id="${debt.id}" min="0" step="0.01" value="${debtPayment}" />
+      </td>
       <td>
         <button class="btn-secondary btn-edit-debt" data-id="${debt.id}">Editar</button>
         <button class="btn-danger btn-delete-debt" data-id="${debt.id}">Eliminar</button>
@@ -585,13 +590,29 @@ async function renderDebts() {
     <td><strong>Total</strong></td>
     <td><strong>${formatCurrency(totalDebts)}</strong></td>
     <td></td>
+    <td></td>
   `;
   elements.debtsTableBody.appendChild(totalRow);
 
   // Update total debts display
   elements.totalDebts.textContent = formatCurrency(totalDebts);
 
-  // attach handlers
+  // attach handlers for payment inputs
+  elements.debtsTableBody.querySelectorAll('.payment-input').forEach((input) => {
+    input.addEventListener('change', async (e) => {
+      const debtId = Number(e.currentTarget.dataset.id);
+      const debt = await getById('deudas', debtId);
+      if (!debt) return;
+      const newPayment = Number(e.currentTarget.value);
+      await put('deudas', {
+        ...debt,
+        payment: newPayment,
+        updatedAt: new Date().toISOString()
+      });
+    });
+  });
+
+  // attach handlers for edit/delete buttons
   elements.debtsTableBody.querySelectorAll('.btn-edit-debt').forEach((b) => {
     b.addEventListener('click', (e) => openDebtForm(Number(e.currentTarget.dataset.id)));
   });
@@ -606,11 +627,13 @@ async function openDebtForm(debtId = null) {
     if (!debt) return;
     elements.debtName.value = debt.name;
     elements.debtAmount.value = debt.amount ?? '0';
+    elements.debtPayment.value = debt.payment ?? '0';
     selectedDebtId = Number(debtId);
     document.getElementById('debt-modal-title').textContent = 'Editar deuda';
   } else {
     elements.debtName.value = '';
     elements.debtAmount.value = '0';
+    elements.debtPayment.value = '0';
     selectedDebtId = null;
     document.getElementById('debt-modal-title').textContent = 'Agregar deuda';
   }
@@ -621,6 +644,7 @@ async function openDebtForm(debtId = null) {
 async function saveDebt() {
   const name = elements.debtName.value.trim();
   const amount = Number(elements.debtAmount.value);
+  const payment = Number(elements.debtPayment.value);
 
   if (!name || isNaN(amount)) return;
 
@@ -631,10 +655,11 @@ async function saveDebt() {
       ...existing,
       name,
       amount,
+      payment,
       updatedAt: new Date().toISOString()
     });
   } else {
-    await add('deudas', { name, amount, createdAt: new Date().toISOString() });
+    await add('deudas', { name, amount, payment, createdAt: new Date().toISOString() });
   }
 
   closeModals();
