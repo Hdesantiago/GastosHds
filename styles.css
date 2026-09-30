@@ -225,18 +225,6 @@ tbody td:last-child {
   text-align: right;
 }
 
-.total-row {
-  background: #f3f4f6;
-  font-weight: bold;
-  border-top: 2px solid #d1d5db;
-  border-bottom: 2px solid #d1d5db;
-}
-
-.total-row:hover {
-  background: #f3f4f6;
-  cursor: default;
-}
-
 .hidden {
   display: none !important;
 }
@@ -269,21 +257,6 @@ tbody td:last-child {
   border-radius: 8px;
   font-size: 0.9rem;
   margin-left: 6px;
-}
-
-.payment-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-family: inherit;
-}
-
-.payment-input:focus {
-  outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 
 .modal h3 {

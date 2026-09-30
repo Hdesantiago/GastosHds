@@ -571,9 +571,7 @@ async function renderDebts() {
     row.innerHTML = `
       <td>${debt.name}</td>
       <td>${formatCurrency(debtAmount)}</td>
-      <td>
-        <input type="number" class="payment-input" data-id="${debt.id}" min="0" step="0.01" value="${debtPayment}" />
-      </td>
+      <td>${formatCurrency(debtPayment)}</td>
       <td>
         <button class="btn-secondary btn-edit-debt" data-id="${debt.id}">Editar</button>
         <button class="btn-danger btn-delete-debt" data-id="${debt.id}">Eliminar</button>
@@ -583,34 +581,8 @@ async function renderDebts() {
     elements.debtsTableBody.appendChild(row);
   });
 
-  // Add total row
-  const totalRow = document.createElement('tr');
-  totalRow.className = 'total-row';
-  totalRow.innerHTML = `
-    <td><strong>Total</strong></td>
-    <td><strong>${formatCurrency(totalDebts)}</strong></td>
-    <td></td>
-    <td></td>
-  `;
-  elements.debtsTableBody.appendChild(totalRow);
-
   // Update total debts display
   elements.totalDebts.textContent = formatCurrency(totalDebts);
-
-  // attach handlers for payment inputs
-  elements.debtsTableBody.querySelectorAll('.payment-input').forEach((input) => {
-    input.addEventListener('change', async (e) => {
-      const debtId = Number(e.currentTarget.dataset.id);
-      const debt = await getById('deudas', debtId);
-      if (!debt) return;
-      const newPayment = Number(e.currentTarget.value);
-      await put('deudas', {
-        ...debt,
-        payment: newPayment,
-        updatedAt: new Date().toISOString()
-      });
-    });
-  });
 
   // attach handlers for edit/delete buttons
   elements.debtsTableBody.querySelectorAll('.btn-edit-debt').forEach((b) => {
