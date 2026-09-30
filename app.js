@@ -578,6 +578,16 @@ async function renderDebts() {
     elements.debtsTableBody.appendChild(row);
   });
 
+  // Add total row
+  const totalRow = document.createElement('tr');
+  totalRow.className = 'total-row';
+  totalRow.innerHTML = `
+    <td><strong>Total</strong></td>
+    <td><strong>${formatCurrency(totalDebts)}</strong></td>
+    <td></td>
+  `;
+  elements.debtsTableBody.appendChild(totalRow);
+
   // Update total debts display
   elements.totalDebts.textContent = formatCurrency(totalDebts);
 

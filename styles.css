@@ -225,6 +225,18 @@ tbody td:last-child {
   text-align: right;
 }
 
+.total-row {
+  background: #f3f4f6;
+  font-weight: bold;
+  border-top: 2px solid #d1d5db;
+  border-bottom: 2px solid #d1d5db;
+}
+
+.total-row:hover {
+  background: #f3f4f6;
+  cursor: default;
+}
+
 .hidden {
   display: none !important;
 }
