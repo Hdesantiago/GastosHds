@@ -233,6 +233,7 @@ async function renderCurrentQuincena() {
 async function renderConcepts() {
   const conceptos = await getAll('conceptos', 'quincenaId', Number(selectedQuincenaId));
   const movements = await getAll('movimientos');
+  const savings = await getAll('ahorros');
   let totalBudget = 0;
   let totalSpent = 0;
   let totalRemaining = 0;
@@ -265,6 +266,9 @@ async function renderConcepts() {
     row.addEventListener('click', () => openConceptDetail(concepto.id));
     elements.conceptsTableBody.appendChild(row);
   });
+
+  const savingsTotal = savings.reduce((sum, saving) => sum + (Number(saving.amount) || 0), 0);
+  totalSaved += savingsTotal;
 
   elements.totalBudget.textContent = formatCurrency(totalBudget);
   elements.totalSpent.textContent = formatCurrency(totalSpent);
