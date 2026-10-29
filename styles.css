@@ -13,7 +13,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(180deg, #f5f3ff 0%, #fdfcff 60%, #ffffff 100%);
+  background: linear-gradient(180deg, #fff1f2 0%, #fffbfb 60%, #ffffff 100%);
 }
 
 button,
@@ -50,18 +50,18 @@ h1 {
 button {
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #881337 0%, #be123c 100%);
   color: white;
   padding: 12px 18px;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 button:hover {
   filter: brightness(1.06);
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 12px 24px rgba(136, 19, 55, 0.3);
 }
 
 button:active {
@@ -77,13 +77,13 @@ button:active {
 }
 
 .btn-secondary {
-  background: #ede9fe;
-  color: #4c1d95;
+  background: #ffe4e6;
+  color: #881337;
   box-shadow: none;
 }
 
 .btn-secondary:hover {
-  background: #ddd6fe;
+  background: #fecdd3;
   filter: none;
 }
 
@@ -91,7 +91,7 @@ button:active {
   background: white;
   border-radius: 22px;
   padding: 16px;
-  box-shadow: 0 20px 50px rgba(109, 40, 217, 0.1);
+  box-shadow: 0 20px 50px rgba(136, 19, 55, 0.1);
   margin-bottom: 16px;
 }
 
@@ -111,9 +111,9 @@ button:active {
 }
 
 .tab-button.active {
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #881337 0%, #be123c 100%);
   color: white;
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 6px 16px rgba(136, 19, 55, 0.3);
 }
 
 .row {
@@ -163,14 +163,11 @@ select {
 }
 
 input[readonly] {
-  background: #f5f3ff;
-}
-
-input:focus,
+  background: #fff1f2;
 select:focus {
   outline: none;
-  border-color: #a855f7;
-  box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15);
+  border-color: #be123c;
+  box-shadow: 0 0 0 4px rgba(190, 18, 60, 0.15);
 }
 
 .summary-grid {
@@ -186,8 +183,8 @@ select:focus {
 
 .summary-grid article,
 .detail-card {
-  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-  border: 1px solid #ddd6fe;
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border: 1px solid #fecdd3;
   border-radius: 18px;
   padding: 18px;
 }
@@ -240,7 +237,7 @@ th {
 }
 
 tbody tr:hover {
-  background: #faf5ff;
+  background: #fff1f2;
   cursor: pointer;
 }
 
@@ -349,8 +346,8 @@ tbody td:last-child {
 }
 
 .movement-list li {
-  background: #faf5ff;
-  border: 1px solid #f3e8ff;
+  background: #fff1f2;
+  border: 1px solid #ffe4e6;
   border-radius: 16px;
   padding: 12px 14px;
 }

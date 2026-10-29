@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gastos-quincena-cache-v2';
+const CACHE_NAME = 'gastos-quincena-cache-v3';
 const FILES_TO_CACHE = [
   'index.html',
   'styles.css',
