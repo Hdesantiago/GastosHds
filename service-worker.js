@@ -1,10 +1,12 @@
-const CACHE_NAME = 'gastos-quincena-cache-v8';
+const CACHE_NAME = 'gastos-quincena-cache-v9';
 const FILES_TO_CACHE = [
   'index.html',
   'styles.css',
   'app.js',
   'manifest.json',
-  'icon.svg'
+  'icon.svg',
+  'icon-192.png',
+  'icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
