@@ -46,6 +46,7 @@
       <div class="tabs" role="tablist">
         <button class="tab-button active" data-tab="resumen">Resumen</button>
         <button class="tab-button" data-tab="deudas">Deudas</button>
+        <button class="tab-button" data-tab="ahorro">Ahorro</button>
       </div>
 
       <div id="tab-resumen">
@@ -117,6 +118,38 @@
                   <th>Nombre</th>
                   <th>Monto</th>
                   <th>Abono mensual</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- Ahorro tab -->
+      <div id="tab-ahorro" class="hidden">
+        <section class="summary-grid" id="savings-summary">
+          <article>
+            <span>Total ahorrado</span>
+            <strong id="total-savings">$0</strong>
+          </article>
+        </section>
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <h2>Ahorro</h2>
+              <p>Registra las cantidades que destinas al ahorro.</p>
+            </div>
+            <button id="btn-add-saving">Agregar ahorro</button>
+          </div>
+          <div class="table-wrapper">
+            <table id="savings-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Detalle</th>
+                  <th>Monto</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -266,6 +299,24 @@
         <h4>Movimientos</h4>
         <ul id="movement-list"></ul>
       </div>
+    </div>
+
+    <div class="modal hidden" id="modal-saving">
+      <h3>Agregar ahorro</h3>
+      <form id="form-saving">
+        <label class="field">
+          <span>Detalle</span>
+          <input type="text" id="saving-note" placeholder="Ej. Fondo de emergencia" required />
+        </label>
+        <label class="field">
+          <span>Monto</span>
+          <input type="number" id="saving-amount" min="0.01" step="0.01" value="0" required />
+        </label>
+        <div class="actions">
+          <button type="button" class="btn-secondary" data-close="true">Cancelar</button>
+          <button type="submit">Guardar</button>
+        </div>
+      </form>
     </div>
 
     <script src="app.js" defer></script>

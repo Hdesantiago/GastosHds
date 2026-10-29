@@ -1,5 +1,5 @@
 const DB_NAME = 'GastosQuincenaDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let db;
 let selectedQuincenaId = null;
 let selectedConceptId = null;
@@ -58,6 +58,14 @@ elements.debtName = document.getElementById('debt-name');
 elements.debtAmount = document.getElementById('debt-amount');
 elements.debtPayment = document.getElementById('debt-payment');
 elements.totalDebts = document.getElementById('total-debts');
+elements.tabAhorro = document.getElementById('tab-ahorro');
+elements.btnAddSaving = document.getElementById('btn-add-saving');
+elements.savingsTableBody = document.querySelector('#savings-table tbody');
+elements.modalSaving = document.getElementById('modal-saving');
+elements.formSaving = document.getElementById('form-saving');
+elements.savingNote = document.getElementById('saving-note');
+elements.savingAmount = document.getElementById('saving-amount');
+elements.totalSavings = document.getElementById('total-savings');
 
 function openDb() {
   return new Promise((resolve, reject) => {
@@ -80,6 +88,9 @@ function openDb() {
       if (!database.objectStoreNames.contains('deudas')) {
         const store = database.createObjectStore('deudas', { keyPath: 'id', autoIncrement: true });
         store.createIndex('name', 'name', { unique: false });
+      }
+      if (!database.objectStoreNames.contains('ahorros')) {
+        database.createObjectStore('ahorros', { keyPath: 'id', autoIncrement: true });
       }
     };
 
@@ -338,6 +349,15 @@ function bindEvents() {
       await saveDebt();
     });
   }
+  if (elements.btnAddSaving) {
+    elements.btnAddSaving.addEventListener('click', () => openSavingForm());
+  }
+  if (elements.formSaving) {
+    elements.formSaving.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await saveSaving();
+    });
+  }
 }
 
 function openModal(modal) {
@@ -544,13 +564,15 @@ async function saveTransaction() {
 // --- Tabs and Deudas functions ---
 function showTab(tab) {
   elements.tabButtons.forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  elements.tabResumen.classList.toggle('hidden', tab !== 'resumen');
+  elements.tabDeudas.classList.toggle('hidden', tab !== 'deudas');
+  elements.tabAhorro.classList.toggle('hidden', tab !== 'ahorro');
+
   if (tab === 'deudas') {
-    elements.tabResumen.classList.add('hidden');
-    elements.tabDeudas.classList.remove('hidden');
     renderDebts();
+  } else if (tab === 'ahorro') {
+    renderSavings();
   } else {
-    elements.tabDeudas.classList.add('hidden');
-    elements.tabResumen.classList.remove('hidden');
     renderConcepts();
   }
 }
@@ -655,6 +677,73 @@ async function deleteDebt(id) {
 }
 
 window.addEventListener('DOMContentLoaded', init);
+
+// --- Ahorro functions ---
+async function renderSavings() {
+  const savings = (await getAll('ahorros')).sort((a, b) => b.id - a.id);
+  elements.savingsTableBody.innerHTML = '';
+
+  let totalSavings = 0;
+
+  savings.forEach((saving) => {
+    const amount = Number(saving.amount) || 0;
+    totalSavings += amount;
+
+    const row = document.createElement('tr');
+
+    const dateCell = document.createElement('td');
+    dateCell.textContent = new Date(saving.createdAt).toLocaleDateString('es-MX');
+
+    const noteCell = document.createElement('td');
+    noteCell.textContent = saving.note;
+
+    const amountCell = document.createElement('td');
+    amountCell.textContent = formatCurrency(amount);
+
+    const actionsCell = document.createElement('td');
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn-danger';
+    deleteButton.textContent = 'Eliminar';
+    deleteButton.addEventListener('click', () => deleteSaving(saving.id));
+    actionsCell.appendChild(deleteButton);
+
+    row.append(dateCell, noteCell, amountCell, actionsCell);
+    elements.savingsTableBody.appendChild(row);
+  });
+
+  elements.totalSavings.textContent = formatCurrency(totalSavings);
+}
+
+function openSavingForm() {
+  elements.savingNote.value = '';
+  elements.savingAmount.value = '0';
+  openModal(elements.modalSaving);
+}
+
+async function saveSaving() {
+  const note = elements.savingNote.value.trim();
+  const amount = Number(elements.savingAmount.value);
+
+  if (!note || isNaN(amount) || amount <= 0) return;
+
+  await add('ahorros', { note, amount, createdAt: new Date().toISOString() });
+
+  closeModals();
+  await renderSavings();
+}
+
+async function deleteSaving(id) {
+  const confirmed = window.confirm('¿Deseas eliminar este ahorro?');
+  if (!confirmed) return;
+
+  await new Promise((resolve, reject) => {
+    const request = getObjectStore('ahorros', 'readwrite').delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+
+  await renderSavings();
+}
 
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
