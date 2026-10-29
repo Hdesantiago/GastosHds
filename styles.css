@@ -13,7 +13,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+  background: linear-gradient(180deg, #fff1f2 0%, #fffbfb 60%, #ffffff 100%);
 }
 
 button,
@@ -50,14 +50,15 @@ h1 {
 button {
   border: none;
   border-radius: 999px;
-  background: #4f46e5;
+  background: linear-gradient(135deg, #881337 0%, #be123c 100%);
   color: white;
   padding: 12px 18px;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);
 }
 
 button:hover {
-  background: #4338ca;
+  filter: brightness(1.08);
 }
 
 .btn-danger {
@@ -69,15 +70,16 @@ button:hover {
 }
 
 .btn-secondary {
-  background: #e5e7eb;
-  color: #111827;
+  background: #ffe4e6;
+  color: #881337;
+  box-shadow: none;
 }
 
 .panel {
   background: white;
   border-radius: 22px;
   padding: 16px;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 20px 50px rgba(136, 19, 55, 0.1);
   margin-bottom: 16px;
 }
 
@@ -97,7 +99,7 @@ button:hover {
 }
 
 .tab-button.active {
-  background: #4f46e5;
+  background: linear-gradient(135deg, #881337 0%, #be123c 100%);
   color: white;
 }
 
@@ -148,7 +150,14 @@ select {
 }
 
 input[readonly] {
-  background: #eef2ff;
+  background: #fff1f2;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #be123c;
+  box-shadow: 0 0 0 4px rgba(190, 18, 60, 0.15);
 }
 
 .summary-grid {
@@ -164,7 +173,8 @@ input[readonly] {
 
 .summary-grid article,
 .detail-card {
-  background: #eef2ff;
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border: 1px solid #fecdd3;
   border-radius: 18px;
   padding: 18px;
 }
@@ -217,7 +227,7 @@ th {
 }
 
 tbody tr:hover {
-  background: #f8fafc;
+  background: #fff1f2;
   cursor: pointer;
 }
 
@@ -326,7 +336,7 @@ tbody td:last-child {
 }
 
 .movement-list li {
-  background: #f8fafc;
+  background: #fff1f2;
   border-radius: 16px;
   padding: 12px 14px;
 }
